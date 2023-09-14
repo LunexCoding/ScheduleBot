@@ -15,9 +15,39 @@ class _ScheduleParser:
         self.__response = None
         self.__soup = None
         self.__table = None
+        self.__listOfGroups = self.__getGroups()
 
     def setGroup(self, group):
         self.__group = group
+
+    def getLessons(self):
+        self.__response = self.__getGroupPageResponse()
+        self.__soup = self.__getGroupPageSoup()
+        self.__table = self.__getGroupScheduleTable()
+        try:
+            currentDayIndex, currentDay = self.__findDay()
+            lessonsWithUncleanText = self.__findAllLessonsOfTheCurrentDay(currentDayIndex)
+            lessons = self.__getCleanText(lessonsWithUncleanText)
+            return lessons
+        except TodaySundayException as e:
+            return None
+        except TodayIsDaOffException as e:
+            return "Выходной"
+        finally:
+            self.__clear()
+
+    def getScheduleForAllGroups(self):
+        lessons = []
+        for group in self.__listOfGroups:
+            self.setGroup(group)
+            groupLessons = self.getLessons()
+            lessons.append(
+                {
+                    "group": group,
+                    "lessons": groupLessons
+                }
+            )
+        return lessons
 
     def __getGroupPageResponse(self):
         groupUrl = f"{self.__url}{self.__group}.html"
@@ -32,23 +62,12 @@ class _ScheduleParser:
     def __getSoupPageWithAllGroups(self, response):
         return BeautifulSoup(response.text.encode("latin-1", "ignore"), "lxml")
 
-    def getScheduleForAllGroups(self):
+    def __getGroups(self):
         response = self.__getPageResponseWithAllGroups()
         soup = self.__getSoupPageWithAllGroups(response)
         groupContainer = soup.find("div", {"class": "колонки-группы"})
         groups = groupContainer.find_all("p")
-        groups = [group.text for group in groups]
-        lessons = []
-        for group in groups:
-            self.setGroup(group)
-            groupLessons = self.getLessons()
-            lessons.append(
-                {
-                    "group": group,
-                    "lessons": groupLessons
-                }
-            )
-        return lessons
+        return [group.text for group in groups]
 
     def __getGroupScheduleTable(self):
         return self.__soup.find("table",  {"class": "расписание"})
@@ -115,23 +134,9 @@ class _ScheduleParser:
         self.__soup = None
         self.__table = None
 
-    def getLessons(self):
-        self.__response = self.__getGroupPageResponse()
-        self.__soup = self.__getGroupPageSoup()
-        self.__table = self.__getGroupScheduleTable()
-        try:
-            currentDayIndex, currentDay = self.__findDay()
-            lessonsWithUncleanText = self.__findAllLessonsOfTheCurrentDay(currentDayIndex)
-            lessons = self.__getCleanText(lessonsWithUncleanText)
-            return lessons
-        except TodaySundayException as e:
-            print("TodaySundayException", f"{self.__group}: {e}")
-            return None
-        except TodayIsDaOffException as e:
-            print("TodayIsDaOffException", f"{self.__group}: {e}")
-            return "Выходной"
-        finally:
-            self.__clear()
+    @property
+    def groups(self):
+        return self.__listOfGroups
 
 
 g_scheduleParser = _ScheduleParser("https://xn--80aapkb3algkc.xn--j1afpl.xn--p1ai/")
