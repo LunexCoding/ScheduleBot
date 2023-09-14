@@ -40,7 +40,6 @@ class Frame(Widget, CTkFrame):
         return CTkTable(
             master=self,
             values=values,
-            wraplength=500,
             **kwargs
         )
 

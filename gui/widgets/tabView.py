@@ -2,7 +2,7 @@ from customtkinter import CTkTabview
 
 from .widget import Widget
 from .frame import Frame
-from .forms import FormWithOneFiled, FormWithTwoFields
+from .forms import FormWithOneFiled
 
 
 class TabView(Widget, CTkTabview):
@@ -18,13 +18,7 @@ class TabView(Widget, CTkTabview):
     def createFormWithOneFiled(self, labelText, placeholderText):
         return FormWithOneFiled(
             master=self.tab("Input"),
+            name=None,
             labelText=labelText,
             placeholderText=placeholderText
-        )
-
-    def createFormWithTwoFields(self, labelTexts, placeholderTexts):
-        return FormWithTwoFields(
-            master=self.tab("Input"),
-            labelText=labelTexts,
-            placeholderText=placeholderTexts
         )
