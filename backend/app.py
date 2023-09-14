@@ -26,7 +26,7 @@ class App:
         self.__window.displayScheduleTable(items)
 
     def _onButtonShowScheduleForAllGroupsClicked(self):
-        items = self.SCHEDULE_TABLE_HEADERS_FOR_REQUIRED_GROUP.copy()
+        items = self.SCHEDULE_TABLE_HEADERS_FOR_ALL_GROUPS.copy()
         for groupData in g_scheduleParser.getScheduleForAllGroups():
             if groupData["lessons"] != "Выходной":
                 for lesson in groupData["lessons"]:
